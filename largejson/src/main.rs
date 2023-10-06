@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use largejson::webservice::MyConfig;
+use log::info;
+use largejson::{NAME, VERSION};
 
 /// Application definition to defer to set of commands under [Commands]
 #[derive(Parser)]
@@ -41,6 +44,8 @@ enum Commands {
 }
 
 fn main() {
+    let log_level = env_logger::Env::default().default_filter_or("info");
+    env_logger::Builder::from_env(log_level).init();
 
     let args = Args::parse();
     match args.command {
@@ -48,6 +53,17 @@ fn main() {
         Commands::Schema => todo!(),
         Commands::SchemaList => todo!(),
         Commands::Validate { filename } => todo!(),
-        Commands::Receive { config } => todo!(),
+        Commands::Receive{ config } => {
+
+            info!("Starting {NAME} for {VERSION}");
+
+            let config: MyConfig = MyConfig::figment(config)
+                .extract()
+                .expect("Config file loaded");
+
+            info!("Loaded config {:?}", config);
+
+            println!("Loaded config as {:#?}", config);
+        },
     };
 }

@@ -1,0 +1,4 @@
+webservice:
+  prefix:
+    name: test
+    version: v0
