@@ -1,3 +1,5 @@
+use jsonschema::ValidationError;
+
 /// Error type for handling errors on Sample
 #[derive(Debug)]
 pub enum MyError {
@@ -25,5 +27,11 @@ impl From<serde_json::Error> for MyError {
 impl From<std::io::Error> for MyError {
     fn from(_value: std::io::Error) -> Self {
         Self::Io("UNKNOWN")
+    }
+}
+
+impl From<ValidationError<'_>> for MyError {
+    fn from(_value: ValidationError<'_>) -> Self {
+        Self::ValidationError()
     }
 }

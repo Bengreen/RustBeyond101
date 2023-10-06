@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use largejson::schema::{Person, schema_string};
+use largejson::schema::{Person, schema_string, validate_with_schema};
 use largejson::{webservice::MyConfig, schema::write_records, error::MyError};
 use log::info;
 use largejson::{NAME, VERSION};
@@ -57,7 +57,7 @@ fn main() -> Result<(), MyError> {
         },
         Commands::Schema => println!("{}", schema_person_string()?),
         Commands::SchemaList => println!("{}", schema_string::<Vec<Person>>()?),
-        Commands::Validate { filename } => todo!(),
+        Commands::Validate { filename } => validate_with_schema(&filename, 2)?,
         Commands::Receive{ config } => {
 
             info!("Starting {NAME} for {VERSION}");

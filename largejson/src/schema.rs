@@ -1,7 +1,9 @@
-use std::fs::File;
+use std::{fs::File, io::{Read, BufReader}};
 
+use jsonschema::JSONSchema;
 use serde::{Deserialize, Serialize};
 use schemars::{schema_for, JsonSchema};
+use serde_json::Value;
 
 use crate::error::MyError;
 
@@ -46,4 +48,48 @@ pub fn schema_string<MyType: JsonSchema>() -> Result<String, MyError> {
     let my_schema_json = serde_json::to_string_pretty(&my_schema)?;
     let my_schema_string = my_schema_json;
     Ok(my_schema_string)
+}
+
+pub fn validate_with_schema(filename: &str, error_limit: usize) -> Result<(), MyError> {
+
+    let schema_str = schema_string::<Vec<Person>>()?;
+
+    let file = File::open(filename)?;
+    let reader = BufReader::new(file);
+
+    match validate(&schema_str, reader, error_limit) {
+        Ok(data) => {
+            if let Value::Array(array) = &data {
+                let length = array.len();
+                println!("Found array of length {length}")
+            }
+            let _my_content: Vec<Person> = serde_json::from_value(data)?;
+
+            Ok(())
+        },
+        Err(err) => Err(err),
+    }
+}
+
+pub fn validate<R: Read>(schema: &str, reader: R, error_limit: usize) -> Result<Value, MyError> {
+
+    let schema_value = serde_json::from_str(schema)?;
+
+    let compiled_schema = JSONSchema::compile(&schema_value)?;
+
+    let data_value = serde_json::from_reader(reader)?;
+
+    {
+        let validation_result = compiled_schema.validate(&data_value);
+        if let Err(errors) = validation_result {
+            let error_stringified: Vec<_> = errors.take(error_limit).map(|value| {
+                format!("Error: instance: {:?}, kind: {:?}, instance_path:: {}, schema_path: {}",
+                    value.instance, value.kind, value.instance_path, value.schema_path)
+            }).collect();
+
+            return Err(MyError::JsonValidation(error_stringified));
+        };
+    }
+
+    Ok(data_value)
 }
