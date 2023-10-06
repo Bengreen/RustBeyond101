@@ -1,9 +1,11 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use largejson::schema::{Person, schema_string};
 use largejson::{webservice::MyConfig, schema::write_records, error::MyError};
 use log::info;
 use largejson::{NAME, VERSION};
+use largejson::{schema::{schema_person_string}};
 
 /// Application definition to defer to set of commands under [Commands]
 #[derive(Parser)]
@@ -53,8 +55,8 @@ fn main() -> Result<(), MyError> {
             println!("Creating filename {filename} and writing {count} records");
             write_records(&filename, count)?;
         },
-        Commands::Schema => todo!(),
-        Commands::SchemaList => todo!(),
+        Commands::Schema => println!("{}", schema_person_string()?),
+        Commands::SchemaList => println!("{}", schema_string::<Vec<Person>>()?),
         Commands::Validate { filename } => todo!(),
         Commands::Receive{ config } => {
 
