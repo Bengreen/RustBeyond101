@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use largejson::webservice::MyConfig;
+use largejson::{webservice::MyConfig, schema::write_records};
 use log::info;
 use largejson::{NAME, VERSION};
 
@@ -49,7 +49,10 @@ fn main() {
 
     let args = Args::parse();
     match args.command {
-        Commands::Generate { filename, count } => todo!(),
+        Commands::Generate { filename, count } => {
+            println!("Creating filename {filename} and writing {count} records");
+            write_records(&filename, count);
+        },
         Commands::Schema => todo!(),
         Commands::SchemaList => todo!(),
         Commands::Validate { filename } => todo!(),
