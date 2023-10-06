@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use largejson::schema::{Person, schema_string, validate_with_schema};
+use largejson::webservice::http_receive_json;
 use largejson::{webservice::MyConfig, schema::write_records, error::MyError};
 use log::info;
 use largejson::{NAME, VERSION};
@@ -69,6 +70,7 @@ fn main() -> Result<(), MyError> {
             info!("Loaded config {:?}", config);
 
             println!("Loaded config as {:#?}", config);
+            http_receive_json(config.webservice)?
         },
     };
     Ok(())
