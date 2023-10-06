@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use largejson::{webservice::MyConfig, schema::write_records};
+use largejson::{webservice::MyConfig, schema::write_records, error::MyError};
 use log::info;
 use largejson::{NAME, VERSION};
 
@@ -43,7 +43,7 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> Result<(), MyError> {
     let log_level = env_logger::Env::default().default_filter_or("info");
     env_logger::Builder::from_env(log_level).init();
 
@@ -51,7 +51,7 @@ fn main() {
     match args.command {
         Commands::Generate { filename, count } => {
             println!("Creating filename {filename} and writing {count} records");
-            write_records(&filename, count);
+            write_records(&filename, count)?;
         },
         Commands::Schema => todo!(),
         Commands::SchemaList => todo!(),
@@ -69,4 +69,5 @@ fn main() {
             println!("Loaded config as {:#?}", config);
         },
     };
+    Ok(())
 }
