@@ -41,8 +41,8 @@ pub fn schema_person_string() -> Result<String, MyError> {
 
 /// Dynamic generate of JsonSchema
 ///
-/// Can use this to generate the JsonSchema for any [Serialisable] object rather than writing one function for each object.
-/// This function can be used instead of [stdout_schema_list] and [schema_person_string]
+/// Can use this to generate the JsonSchema for any [Serialize] object rather than writing one function for each object.
+/// This function can be used instead of [schema_person_string]
 pub fn schema_string<MyType: JsonSchema>() -> Result<String, MyError> {
     let my_schema = schema_for!(MyType);
     let my_schema_json = serde_json::to_string_pretty(&my_schema)?;

@@ -1,3 +1,8 @@
+//! Provide a webservice definition
+//!
+//! The Webservice is implemented using warp which is based on Hyper. It provides a functional
+//! style for building our webservice and provides great performance.
+
 use std::{
     path::Path,
     convert::Infallible,
@@ -19,18 +24,23 @@ use crate::{
 };
 
 
+/// Configuration for our webservice prefix. Typically provided as part of the [WebServiceConfig]
 #[derive(Deserialize, Debug, Clone)]
 pub struct WebServicePrefixConfig {
+    /// Name of our webservice
     pub name: String,
+    /// Version of our webservice
     pub version: String,
 }
 
+/// Configuration of our webservice. This forms part of [MyConfig]
 #[derive(Deserialize, Debug, Clone)]
 pub struct WebServiceConfig {
     /// Prefix of the served API
     pub prefix: WebServicePrefixConfig,
 }
 
+/// The highest configuration for our service. It encloses [WebServiceConfig] and is typically loaded from a YAML file using a library such a figment.
 #[derive(Deserialize, Debug)]
 pub struct MyConfig {
     /// Config of my web service
@@ -45,13 +55,22 @@ impl MyConfig {
     }
 }
 
+/// Definition of our positive reply to the client upon successful validation of a JSON structure.
 #[derive(Serialize)]
 struct ValidationReply {
+    /// Length of the content uploaded in bytes
     size: usize,
+    /// length of the content read on upload in number of records (if the object is an array, else it retuns 0)
     length: usize,
+    /// Returns true to indicate that validation was successful
     validate: bool,
 }
 
+/// Define the negative rejection responses for our service.
+///
+/// This needs additional work to fully expand all the TODO: sections
+/// The key part of this response is that we provide an explict response for the JsonValidation error to provide a
+/// limited summary of the validation errors to allow the client to correct any issues.
 async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
     let (code, json_message) = if err.is_not_found() {
         (StatusCode::NOT_FOUND, json(&"Not Found".to_string()))
@@ -81,6 +100,10 @@ async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Inf
     Ok(warp::reply::with_status(json_message, code))
 }
 
+/// Receive and process JSON content
+///
+/// Parse the JSON content provided and reply positively if it validates successfully (Ok response). Or
+/// provide error feedback via the (Err response)
 async fn receive_binary_review(
     mut body: impl Stream<Item = Result<impl Buf, warp::Error>> + Unpin + Send + Sync
 ) -> Result<impl Reply, Rejection> {
@@ -129,6 +152,7 @@ async fn receive_binary_review(
 // Marker trait to indicate MyError is a planned rejection type
 impl Reject for MyError {}
 
+/// Define our webservice using Filters from Warp
 pub async fn http_service_cancellable(ct: CancellationToken, config: WebServiceConfig) -> Result<(), MyError> {
 
     // Setup http server
@@ -163,6 +187,7 @@ pub async fn http_service_cancellable(ct: CancellationToken, config: WebServiceC
     Ok(server.await)
 }
 
+/// Syntatic sugar to make it easier to start our http calls.
 pub fn http_receive_json(config: WebServiceConfig) -> Result<(), MyError> {
 
     let ct = CancellationToken::new();
