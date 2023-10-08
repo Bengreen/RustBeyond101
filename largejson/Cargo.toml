@@ -18,3 +18,15 @@ tokio = { version = "~1.32", features = ["full"] }
 futures = "~0.3"
 tokio-util = "~0.7"
 warp = "~0.3.5"
+
+[dev-dependencies]
+criterion = { version = "~0.5", features = ["async_tokio"] }
+reqwest = { version = "~0.11" }
+
+[[bench]]
+name = "validate"
+harness = false
+
+[[bench]]
+name = "http"
+harness = false
